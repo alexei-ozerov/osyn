@@ -2,8 +2,8 @@ package osyn
 
 import "core:c"
 import "core:fmt"
+import "core:log"
 import "core:os"
-import "core:time"
 
 import ma "vendor:miniaudio"
 import rl "vendor:raylib"
@@ -45,6 +45,10 @@ init_ma_device_data :: proc() -> (ma.device_config, ma.device) {
 main :: proc() {
 	sineWave: ma.waveform
 
+	// Init Logging
+	logger := log.create_console_logger()
+	context.logger = logger
+
 	deviceConfig, device := init_ma_device_data()
 	deviceConfig.pUserData = &sineWave
 
@@ -53,7 +57,7 @@ main :: proc() {
 	}
 
 	// Setup Waveform
-	fmt.printfln("Device Name: %s\n", device.playback.name)
+	log.infof("Device Name: %s\n", device.playback.name)
 	sineWaveConfig := ma.waveform_config_init(
 		device.playback.playback_format,
 		device.playback.channels,
@@ -71,7 +75,8 @@ main :: proc() {
 	fmt.println("Press Enter to quit...")
 	_ = read_input()
 
-	// Unload Device
+	// Unload Device & Destroy Logger
 	ma.device_uninit(&device)
+	log.destroy_console_logger(logger)
 }
 
